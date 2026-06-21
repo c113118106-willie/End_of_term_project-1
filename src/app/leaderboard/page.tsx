@@ -15,14 +15,14 @@ export default function LeaderboardPage() {
               href="/"
               className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
-              Back
+              返回首頁
             </Link>
             <div>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                Catch Leaderboard
+                🏆 大物排行榜
               </h1>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Top 5 Biggest Catches
+                全站前五大漁獲紀錄
               </p>
             </div>
           </div>
@@ -35,7 +35,7 @@ export default function LeaderboardPage() {
       <footer className="border-t border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-900">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <p className="text-center text-sm text-gray-600 dark:text-gray-400">
-            2024 Catch Leaderboard
+            2026 釣客天堂
           </p>
         </div>
       </footer>

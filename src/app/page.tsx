@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { motion } from "motion/react";
 import Link from "next/link";
@@ -17,15 +17,15 @@ export default function Home() {
           <div className="flex items-start justify-between gap-4">
             <div className="flex flex-col gap-2">
               <span className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                Fishing Community · 2026
+                釣魚社群 · 2026
               </span>
               <h1 className="font-display text-5xl leading-tight tracking-tight sm:text-6xl">
-                <span className="italic">Angler</span>
-                <span>Hub</span>
+                <span className="italic">釣客</span>
+                <span>天堂</span>
                 <span className="text-primary">.</span>
               </h1>
               <p className="mt-1 max-w-md text-sm leading-relaxed text-muted-foreground">
-                Log your catch, track the conditions, and compete for the biggest fish on the leaderboard.
+                紀錄你的漁獲、追蹤釣魚環境，並在排行榜上與其他釣友競技大物！
               </p>
             </div>
             <div className="flex flex-col items-end gap-2">
@@ -34,25 +34,25 @@ export default function Home() {
                 href="/leaderboard"
                 className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card/70 px-4 py-2 text-[13px] font-medium backdrop-blur-md hover:border-primary/60 hover:bg-primary/10 hover:text-primary transition-colors"
               >
-                Leaderboard
+                🏆 排行榜
               </Link>
               <Link
                 href="/analysis"
                 className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card/70 px-4 py-2 text-[13px] font-medium backdrop-blur-md hover:border-primary/60 hover:bg-primary/10 hover:text-primary transition-colors"
               >
-                Analysis
+                📊 數據分析
               </Link>
               <Link
                 href="/spots"
                 className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card/70 px-4 py-2 text-[13px] font-medium backdrop-blur-md hover:border-primary/60 hover:bg-primary/10 hover:text-primary transition-colors"
               >
-                Spots
+                📍 釣點總覽
               </Link>
               <Link
                 href="/species"
                 className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card/70 px-4 py-2 text-[13px] font-medium backdrop-blur-md hover:border-primary/60 hover:bg-primary/10 hover:text-primary transition-colors"
               >
-                Species
+                🐟 魚種圖鑑
               </Link>
             </div>
           </div>
@@ -65,7 +65,7 @@ export default function Home() {
           className="rounded-[2rem] border border-border/70 bg-card/65 p-6 backdrop-blur-md sm:p-8"
         >
           <h2 className="mb-6 font-display text-2xl tracking-tight">
-            Log a Catch
+            🎣 紀錄漁獲
           </h2>
           <CatchForm />
         </motion.section>

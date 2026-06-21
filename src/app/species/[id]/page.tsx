@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
@@ -42,16 +42,16 @@ export default function SpeciesDetailPage() {
     "粉餌": "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
   };
 
-  if (loading) return <div className="flex min-h-screen items-center justify-center text-muted-foreground">Loading...</div>;
-  if (!species) return <div className="flex min-h-screen items-center justify-center text-muted-foreground">Species not found.</div>;
+  if (loading) return <div className="flex min-h-screen items-center justify-center text-muted-foreground">載入中...</div>;
+  if (!species) return <div className="flex min-h-screen items-center justify-center text-muted-foreground">找不到此魚種。</div>;
 
   return (
     <main className="min-h-screen bg-background text-foreground">
       <header className="border-b border-border bg-card/60 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
           <div className="flex items-center gap-3">
-            <Link href="/" className="rounded-full border border-border px-3 py-1.5 text-sm hover:bg-muted transition-colors">Home</Link>
-            <Link href="/species" className="rounded-full border border-border px-3 py-1.5 text-sm hover:bg-muted transition-colors">Species</Link>
+            <Link href="/" className="rounded-full border border-border px-3 py-1.5 text-sm hover:bg-muted transition-colors">首頁</Link>
+            <Link href="/species" className="rounded-full border border-border px-3 py-1.5 text-sm hover:bg-muted transition-colors">魚種圖鑑</Link>
             <h1 className="text-xl font-bold">{species.common_name}</h1>
           </div>
           <ThemeToggle />
@@ -60,31 +60,29 @@ export default function SpeciesDetailPage() {
 
       <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 space-y-10">
 
-        {/* 基本資訊 */}
         <section className="rounded-2xl border border-border bg-card/60 p-6">
           <h2 className="mb-1 text-2xl font-bold">{species.common_name}</h2>
           {species.scientific_name && <p className="mb-3 text-sm italic text-muted-foreground">{species.scientific_name}</p>}
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
             {species.season && (
               <div className="rounded-xl bg-muted/50 p-3">
-                <p className="text-xs text-muted-foreground">Season</p>
+                <p className="text-xs text-muted-foreground">出沒季節</p>
                 <p className="font-semibold">{species.season}</p>
               </div>
             )}
             {species.size_description && (
               <div className="rounded-xl bg-muted/50 p-3 col-span-2">
-                <p className="text-xs text-muted-foreground">Size</p>
+                <p className="text-xs text-muted-foreground">體型描述</p>
                 <p className="text-sm">{species.size_description}</p>
               </div>
             )}
           </div>
         </section>
 
-        {/* 推薦餌料 */}
         <section>
-          <h3 className="mb-4 text-lg font-bold">Recommended Baits</h3>
+          <h3 className="mb-4 text-lg font-bold">推薦餌料</h3>
           {baits.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No bait data.</p>
+            <p className="text-sm text-muted-foreground">尚無餌料資料。</p>
           ) : (
             <div className="grid gap-3 sm:grid-cols-2">
               {baits.map((b) => (
@@ -95,18 +93,17 @@ export default function SpeciesDetailPage() {
                       {b.bait_type}
                     </span>
                   </div>
-                  <p className="text-xs text-muted-foreground">Effectiveness: {b.effectiveness}</p>
+                  <p className="text-xs text-muted-foreground">有效性：{b.effectiveness}</p>
                 </div>
               ))}
             </div>
           )}
         </section>
 
-        {/* 推薦釣組 */}
         <section>
-          <h3 className="mb-4 text-lg font-bold">Recommended Rigs</h3>
+          <h3 className="mb-4 text-lg font-bold">推薦釣組</h3>
           {rigs.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No rig data.</p>
+            <p className="text-sm text-muted-foreground">尚無釣組資料。</p>
           ) : (
             <div className="grid gap-3 sm:grid-cols-2">
               {rigs.map((r) => (
@@ -122,11 +119,10 @@ export default function SpeciesDetailPage() {
           )}
         </section>
 
-        {/* 可在哪些釣點找到 */}
         <section>
-          <h3 className="mb-4 text-lg font-bold">Where to Find This Fish</h3>
+          <h3 className="mb-4 text-lg font-bold">可在哪些釣點找到</h3>
           {spots.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No spot data.</p>
+            <p className="text-sm text-muted-foreground">尚無釣點資料。</p>
           ) : (
             <div className="grid gap-3 sm:grid-cols-2">
               {spots.map((s) => (
@@ -136,8 +132,8 @@ export default function SpeciesDetailPage() {
                   className="rounded-2xl border border-border bg-card/60 p-4 transition-all hover:scale-[1.02] hover:border-primary/50 hover:shadow-md"
                 >
                   <p className="font-semibold">{s.name}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">Abundance: {s.abundance}</p>
-                  <p className="text-xs text-muted-foreground">Best season: {s.best_season}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">豐富度：{s.abundance}</p>
+                  <p className="text-xs text-muted-foreground">最佳季節：{s.best_season}</p>
                 </Link>
               ))}
             </div>
