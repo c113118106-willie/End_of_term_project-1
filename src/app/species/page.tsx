@@ -29,17 +29,17 @@ export default function SpeciesPage() {
       <header className="border-b border-border bg-card/60 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
           <div className="flex items-center gap-3">
-            <Link href="/" className="rounded-full border border-border px-3 py-1.5 text-sm hover:bg-muted transition-colors">Home</Link>
-            <Link href="/spots" className="rounded-full border border-border px-3 py-1.5 text-sm hover:bg-muted transition-colors">Spots</Link>
-            <h1 className="text-xl font-bold">Fish Species</h1>
+            <Link href="/" className="rounded-full border border-border px-3 py-1.5 text-sm hover:bg-muted transition-colors">首頁</Link>
+            <Link href="/spots" className="rounded-full border border-border px-3 py-1.5 text-sm hover:bg-muted transition-colors">熱門釣點</Link>
+            <h1 className="text-xl font-bold">魚種圖鑑</h1>
           </div>
           <ThemeToggle />
         </div>
       </header>
 
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-        <h2 className="mb-2 text-2xl font-bold">Fish Species Guide</h2>
-        <p className="mb-8 text-sm text-muted-foreground">Click a species to see recommended baits and rigs.</p>
+        <h2 className="mb-2 text-2xl font-bold">台灣魚種指南</h2>
+        <p className="mb-8 text-sm text-muted-foreground">點擊特定魚種，即可查看推薦的餌料與釣組搭配組合。</p>
 
         {loading ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -57,7 +57,7 @@ export default function SpeciesPage() {
               >
                 <h3 className="mb-1 text-lg font-bold group-hover:text-primary transition-colors">{sp.common_name}</h3>
                 {sp.scientific_name && <p className="mb-2 text-xs italic text-muted-foreground">{sp.scientific_name}</p>}
-                {sp.season && <p className="text-xs text-muted-foreground">Season: {sp.season}</p>}
+                {sp.season && <p className="text-xs text-muted-foreground">適合季節：{sp.season}</p>}
                 {sp.size_description && <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{sp.size_description}</p>}
               </Link>
             ))}

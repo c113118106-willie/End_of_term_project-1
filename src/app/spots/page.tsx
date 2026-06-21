@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
@@ -46,6 +46,7 @@ export default function SpotsPage() {
     load();
   }, []);
 
+  // 已修復：將原本亂碼的鍵值對齊資料庫特徵（海、溪、池）
   const waterTypeColor: Record<string, string> = {
     "海": "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
     "溪": "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
@@ -57,18 +58,18 @@ export default function SpotsPage() {
       <header className="border-b border-border bg-card/60 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
           <div className="flex items-center gap-3">
-            <Link href="/" className="rounded-full border border-border px-3 py-1.5 text-sm hover:bg-muted transition-colors">Home</Link>
-            <Link href="/leaderboard" className="rounded-full border border-border px-3 py-1.5 text-sm hover:bg-muted transition-colors">Leaderboard</Link>
-            <Link href="/analysis" className="rounded-full border border-border px-3 py-1.5 text-sm hover:bg-muted transition-colors">Analysis</Link>
-            <h1 className="text-xl font-bold">Fishing Spots</h1>
+            <Link href="/" className="rounded-full border border-border px-3 py-1.5 text-sm hover:bg-muted transition-colors">首頁</Link>
+            <Link href="/leaderboard" className="rounded-full border border-border px-3 py-1.5 text-sm hover:bg-muted transition-colors">戰績排行榜</Link>
+            <Link href="/analysis" className="rounded-full border border-border px-3 py-1.5 text-sm hover:bg-muted transition-colors">數據分析</Link>
+            <h1 className="text-xl font-bold">熱門釣點</h1>
           </div>
           <ThemeToggle />
         </div>
       </header>
 
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-        <h2 className="mb-2 text-2xl font-bold">All Fishing Spots</h2>
-        <p className="mb-8 text-sm text-muted-foreground">Click a spot to see details, reviews, and fish species.</p>
+        <h2 className="mb-2 text-2xl font-bold">全台釣點總覽</h2>
+        <p className="mb-8 text-sm text-muted-foreground">點擊任意釣點即可查看詳細資訊、釣友評價以及目標魚種。</p>
 
         {loading ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -87,7 +88,7 @@ export default function SpotsPage() {
                 <div className="mb-3 flex items-start justify-between gap-2">
                   <h3 className="font-bold text-lg group-hover:text-primary transition-colors">{spot.name}</h3>
                   <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${waterTypeColor[spot.water_type] ?? ""}`}>
-                    {spot.water_type}
+                    {spot.water_type}域
                   </span>
                 </div>
                 <p className="mb-3 text-xs text-muted-foreground">{spot.location}</p>
@@ -101,7 +102,7 @@ export default function SpotsPage() {
                     ))}
                   </div>
                   <span className="text-xs text-muted-foreground">
-                    {spot.avg_rating > 0 ? spot.avg_rating.toFixed(1) : "No reviews"} ({spot.review_count})
+                    {spot.avg_rating > 0 ? spot.avg_rating.toFixed(1) : "暫無評價"} ({spot.review_count} 則評價)
                   </span>
                 </div>
                 <div className="flex flex-wrap gap-1.5">

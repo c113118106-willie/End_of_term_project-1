@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
@@ -43,7 +43,7 @@ export function CatchForm({ onSuccess }: { onSuccess?: () => void }) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.fishing_spot_id || !form.fish_species_id || !form.length_cm) {
-      setError("Please fill in spot, fish species, and length.");
+      setError("請填寫必要欄位：釣點、魚種及魚體長度。");
       return;
     }
     setSubmitting(true);
@@ -85,7 +85,7 @@ export function CatchForm({ onSuccess }: { onSuccess?: () => void }) {
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
       {success && (
         <div className="rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 px-4 py-3 text-sm text-green-700 dark:text-green-400">
-          Catch recorded! Check the leaderboard. 🎣
+          釣果已成功紀錄！快去戰績排行榜看看吧 🎣
         </div>
       )}
       {error && (
@@ -95,97 +95,97 @@ export function CatchForm({ onSuccess }: { onSuccess?: () => void }) {
       )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {/* 釣點 */}
+        {/* 選擇釣點 */}
         <div>
-          <label className={labelClass}>Fishing Spot *</label>
+          <label className={labelClass}>作釣釣點 *</label>
           <select className={inputClass} value={form.fishing_spot_id} onChange={(e) => set("fishing_spot_id", e.target.value)}>
-            <option value="">Select a spot...</option>
+            <option value="">請選擇釣點...</option>
             {spots.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
           </select>
         </div>
 
-        {/* 魚種 */}
+        {/* 選擇魚種 */}
         <div>
-          <label className={labelClass}>Fish Species *</label>
+          <label className={labelClass}>目標魚種 *</label>
           <select className={inputClass} value={form.fish_species_id} onChange={(e) => set("fish_species_id", e.target.value)}>
-            <option value="">Select a species...</option>
+            <option value="">請選擇魚種...</option>
             {species.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
           </select>
         </div>
 
-        {/* 餌料 */}
+        {/* 選擇餌料 */}
         <div>
-          <label className={labelClass}>Bait Used</label>
+          <label className={labelClass}>使用餌料</label>
           <select className={inputClass} value={form.bait_id} onChange={(e) => set("bait_id", e.target.value)}>
-            <option value="">Select a bait...</option>
+            <option value="">請選擇餌料...</option>
             {baits.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
           </select>
         </div>
 
-        {/* 體長 */}
+        {/* 魚體長度 */}
         <div>
-          <label className={labelClass}>Length (cm) *</label>
-          <input type="number" min="0" step="0.1" placeholder="e.g. 45" className={inputClass} value={form.length_cm} onChange={(e) => set("length_cm", e.target.value)} />
+          <label className={labelClass}>長度 (cm) *</label>
+          <input type="number" min="0" step="0.1" placeholder="例如：45" className={inputClass} value={form.length_cm} onChange={(e) => set("length_cm", e.target.value)} />
         </div>
 
-        {/* 重量 */}
+        {/* 魚體重量 */}
         <div>
-          <label className={labelClass}>Weight (kg)</label>
-          <input type="number" min="0" step="0.01" placeholder="e.g. 1.2" className={inputClass} value={form.weight_kg} onChange={(e) => set("weight_kg", e.target.value)} />
+          <label className={labelClass}>重量 (kg)</label>
+          <input type="number" min="0" step="0.01" placeholder="例如：1.2" className={inputClass} value={form.weight_kg} onChange={(e) => set("weight_kg", e.target.value)} />
         </div>
 
-        {/* 潮汐 */}
+        {/* 潮汐狀態 */}
         <div>
-          <label className={labelClass}>Tide Status</label>
+          <label className={labelClass}>潮汐狀態</label>
           <select className={inputClass} value={form.tide_status} onChange={(e) => set("tide_status", e.target.value)}>
-            <option value="">Select tide...</option>
-            <option value="High Tide">High Tide</option>
-            <option value="Low Tide">Low Tide</option>
-            <option value="Spring Tide">Spring Tide</option>
-            <option value="Neap Tide">Neap Tide</option>
+            <option value="">請選擇潮汐...</option>
+            <option value="High Tide">滿潮</option>
+            <option value="Low Tide">乾潮</option>
+            <option value="Spring Tide">大潮</option>
+            <option value="Neap Tide">小潮</option>
           </select>
         </div>
 
         {/* 作釣時段 */}
         <div>
-          <label className={labelClass}>Fishing Period</label>
+          <label className={labelClass}>作釣時段</label>
           <select className={inputClass} value={form.fishing_period} onChange={(e) => set("fishing_period", e.target.value)}>
-            <option value="">Select period...</option>
-            <option value="Dawn">Dawn</option>
-            <option value="Morning">Morning</option>
-            <option value="Afternoon">Afternoon</option>
-            <option value="Evening">Evening</option>
-            <option value="Midnight">Midnight</option>
+            <option value="">請選擇時段...</option>
+            <option value="Dawn">清晨 (晨光)</option>
+            <option value="Morning">上午</option>
+            <option value="Afternoon">下午</option>
+            <option value="Evening">傍晚/夜釣</option>
+            <option value="Midnight">深夜/坎頂</option>
           </select>
         </div>
 
-        {/* 風向 */}
+        {/* 當下風向 */}
         <div>
-          <label className={labelClass}>Wind Direction</label>
+          <label className={labelClass}>風向</label>
           <select className={inputClass} value={form.wind_direction} onChange={(e) => set("wind_direction", e.target.value)}>
-            <option value="">Select wind...</option>
-            <option value="N">N</option>
-            <option value="S">S</option>
-            <option value="E">E</option>
-            <option value="W">W</option>
-            <option value="NE">NE</option>
-            <option value="NW">NW</option>
-            <option value="SE">SE</option>
-            <option value="SW">SW</option>
+            <option value="">請選擇風向...</option>
+            <option value="N">北風 (N)</option>
+            <option value="S">南風 (S)</option>
+            <option value="E">東風 (E)</option>
+            <option value="W">西風 (W)</option>
+            <option value="NE">東北風 (NE)</option>
+            <option value="NW">西北風 (NW)</option>
+            <option value="SE">東南風 (SE)</option>
+            <option value="SW">西南風 (SW)</option>
           </select>
         </div>
 
-        {/* 水溫 */}
+        {/* 當下水溫 */}
         <div>
-          <label className={labelClass}>Water Temp (°C)</label>
-          <input type="number" min="0" max="40" step="0.1" placeholder="e.g. 24" className={inputClass} value={form.water_temperature_celsius} onChange={(e) => set("water_temperature_celsius", e.target.value)} />
+          <label className={labelClass}>當下水溫 (°C)</label>
+          <input type="number" min="0" max="40" step="0.1" placeholder="例如：24" className={inputClass} value={form.water_temperature_celsius} onChange={(e) => set("water_temperature_celsius", e.target.value)} />
         </div>
       </div>
 
-      {/* 備註 */}
+      {/* 備註與心得 */}
       <div>
-        <label className={labelClass}>Notes</label>
-        <textarea rows={3} placeholder="Any tips or notes about this catch..." className={inputClass} value={form.notes} onChange={(e) => set("notes", e.target.value)} />
+        <label className={labelClass}>備註 / 釣況心得</label>
+        <textarea rows={3} placeholder="分享一下當天的流水、咬況、起魚心得或是特殊釣組技巧..." className={inputClass} value={form.notes} onChange={(e) => set("notes", e.target.value)} />
       </div>
 
       <button
@@ -193,7 +193,7 @@ export function CatchForm({ onSuccess }: { onSuccess?: () => void }) {
         disabled={submitting}
         className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
       >
-        {submitting ? "Submitting..." : "🎣 Submit Catch"}
+        {submitting ? "資料提交中..." : "登錄釣果戰績"}
       </button>
     </form>
   );

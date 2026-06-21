@@ -23,6 +23,33 @@ interface CatchRecord {
   };
 }
 
+// 建立前端顯示用的中英對照表
+const tideMap: Record<string, string> = {
+  "High Tide": "滿潮",
+  "Low Tide": "乾潮",
+  "Spring Tide": "大潮",
+  "Neap Tide": "小潮",
+};
+
+const periodMap: Record<string, string> = {
+  "Dawn": "清晨 (晨光)",
+  "Morning": "上午",
+  "Afternoon": "下午",
+  "Evening": "傍晚/夜釣",
+  "Midnight": "深夜/坎頂",
+};
+
+const windMap: Record<string, string> = {
+  "N": "北風",
+  "S": "南風",
+  "E": "東風",
+  "W": "西風",
+  "NE": "東北風",
+  "NW": "西北風",
+  "SE": "東南風",
+  "SW": "西南風",
+};
+
 export function CatchLeaderboard() {
   const [records, setRecords] = useState<CatchRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,7 +87,7 @@ export function CatchLeaderboard() {
 
         setRecords((data as any) || []);
       } catch (err) {
-        const message = err instanceof Error ? err.message : "Query failed";
+        const message = err instanceof Error ? err.message : "查詢失敗";
         setError(message);
         console.error("Leaderboard query error:", err);
       } finally {
@@ -77,10 +104,10 @@ export function CatchLeaderboard() {
         <div className="px-4 py-8 sm:px-6 lg:px-8">
           <div className="mb-8 space-y-4">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Loading Leaderboard...
+              載入排行榜中...
             </h2>
             <p className="text-gray-600 dark:text-gray-400">
-              Fetching top catches...
+              正在讀取全台巨物戰績資料...
             </p>
           </div>
 
@@ -103,7 +130,7 @@ export function CatchLeaderboard() {
         <div className="px-4 py-8 sm:px-6 lg:px-8">
           <div className="rounded-lg bg-red-50 p-4 dark:bg-red-900/20">
             <p className="text-sm font-medium text-red-800 dark:text-red-400">
-              Error: {error}
+              發生錯誤：{error}
             </p>
           </div>
         </div>
@@ -116,10 +143,10 @@ export function CatchLeaderboard() {
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="mb-12 space-y-3">
           <h2 className="text-4xl font-bold bg-linear-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent dark:from-blue-400 dark:to-blue-600">
-            Top 5 Catches
+            五大巨物排行榜
           </h2>
           <p className="text-base text-gray-600 dark:text-gray-400">
-            Biggest fish caught by all anglers
+            全台釣友最大體型紀錄，看看誰才是真正的海釣霸主！
           </p>
         </div>
 
@@ -127,7 +154,7 @@ export function CatchLeaderboard() {
           <Card className="bg-white dark:bg-gray-800">
             <CardContent className="flex items-center justify-center py-12">
               <p className="text-center text-gray-500 dark:text-gray-400">
-                No catch records yet. Go fishing!
+                目前尚無戰績紀錄，快去作釣吧！
               </p>
             </CardContent>
           </Card>
@@ -143,11 +170,11 @@ export function CatchLeaderboard() {
               const badgeColor = badgeColorMap[rank] || "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
 
               const fishName =
-                (record.fish_species as any)?.common_name || "Unknown species";
+                (record.fish_species as any)?.common_name || "未知魚種";
               const spotName =
-                (record.fishing_spots as any)?.name || "Unknown spot";
+                (record.fishing_spots as any)?.name || "未知釣點";
               const date = new Date(record.created_at);
-              const dateStr = date.toLocaleDateString("en-US", {
+              const dateStr = date.toLocaleDateString("zh-TW", {
                 year: "numeric",
                 month: "2-digit",
                 day: "2-digit",
@@ -184,7 +211,7 @@ export function CatchLeaderboard() {
                           </p>
                         </div>
                         <div className={cn("rounded-full px-4 py-1 text-sm font-semibold", badgeColor)}>
-                          {record.length_cm} cm
+                          長度：{record.length_cm} cm
                         </div>
                       </div>
 
@@ -192,7 +219,7 @@ export function CatchLeaderboard() {
                         {record.weight_kg && (
                           <div className="rounded-lg bg-gray-50 p-3 dark:bg-gray-700">
                             <p className="text-xs text-gray-600 dark:text-gray-400">
-                              Weight
+                              重量
                             </p>
                             <p className="text-lg font-semibold text-gray-900 dark:text-white">
                               {record.weight_kg} kg
@@ -202,30 +229,30 @@ export function CatchLeaderboard() {
                         {record.water_temperature_celsius && (
                           <div className="rounded-lg bg-gray-50 p-3 dark:bg-gray-700">
                             <p className="text-xs text-gray-600 dark:text-gray-400">
-                              Water Temp
+                              水溫
                             </p>
                             <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                              {record.water_temperature_celsius}C
+                              {record.water_temperature_celsius}°C
                             </p>
                           </div>
                         )}
                         {record.tide_status && (
                           <div className="rounded-lg bg-gray-50 p-3 dark:bg-gray-700">
                             <p className="text-xs text-gray-600 dark:text-gray-400">
-                              Tide
+                              潮汐
                             </p>
                             <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                              {record.tide_status}
+                              {tideMap[record.tide_status] || record.tide_status}
                             </p>
                           </div>
                         )}
                         {record.wind_direction && (
                           <div className="rounded-lg bg-gray-50 p-3 dark:bg-gray-700">
                             <p className="text-xs text-gray-600 dark:text-gray-400">
-                              Wind
+                              風向
                             </p>
                             <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                              {record.wind_direction}
+                              {windMap[record.wind_direction] || record.wind_direction}
                             </p>
                           </div>
                         )}
@@ -234,16 +261,16 @@ export function CatchLeaderboard() {
                       {record.notes && (
                         <div className="mb-3 rounded-lg border-l-4 border-blue-400 bg-blue-50 px-4 py-2 dark:border-blue-600 dark:bg-blue-900/30">
                           <p className="text-sm text-gray-700 dark:text-gray-300">
-                            Note: {record.notes}
+                            <strong>釣友心得：</strong>{record.notes}
                           </p>
                         </div>
                       )}
 
                       <div className="flex flex-col gap-2 text-xs text-gray-500 dark:text-gray-400 sm:flex-row sm:items-center sm:justify-between">
                         {record.fishing_period && (
-                          <span>Time: {record.fishing_period}</span>
+                          <span>作釣時段：{periodMap[record.fishing_period] || record.fishing_period}</span>
                         )}
-                        <span>Date: {dateStr}</span>
+                        <span>紀錄日期：{dateStr}</span>
                       </div>
                     </div>
                   </div>
@@ -255,7 +282,7 @@ export function CatchLeaderboard() {
 
         <div className="mt-12 rounded-lg bg-blue-50 p-6 text-center dark:bg-blue-900/20">
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Showing <span className="font-bold text-gray-900 dark:text-white">{records.length}</span> catch records
+            目前顯示 <span className="font-bold text-gray-900 dark:text-white">{records.length}</span> 筆戰績紀錄
           </p>
         </div>
       </div>

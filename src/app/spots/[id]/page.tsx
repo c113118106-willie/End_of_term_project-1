@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
@@ -63,6 +63,7 @@ export default function SpotDetailPage() {
       rating: reviewForm.rating,
       review_content: reviewForm.review_content,
     });
+    setSubmitting(true); // 修正：這裏應保持原邏輯或設為 false
     setSubmitting(false);
     setSuccess(true);
     setReviewForm({ rating: 5, review_content: "" });
@@ -73,16 +74,16 @@ export default function SpotDetailPage() {
 
   const inputClass = "w-full rounded-xl border border-border bg-background/60 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50";
 
-  if (loading) return <div className="flex min-h-screen items-center justify-center text-muted-foreground">Loading...</div>;
-  if (!spot) return <div className="flex min-h-screen items-center justify-center text-muted-foreground">Spot not found.</div>;
+  if (loading) return <div className="flex min-h-screen items-center justify-center text-muted-foreground">資料載入中...</div>;
+  if (!spot) return <div className="flex min-h-screen items-center justify-center text-muted-foreground">找不到該釣點資訊。</div>;
 
   return (
     <main className="min-h-screen bg-background text-foreground">
       <header className="border-b border-border bg-card/60 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
           <div className="flex items-center gap-3">
-            <Link href="/" className="rounded-full border border-border px-3 py-1.5 text-sm hover:bg-muted transition-colors">Home</Link>
-            <Link href="/spots" className="rounded-full border border-border px-3 py-1.5 text-sm hover:bg-muted transition-colors">Spots</Link>
+            <Link href="/" className="rounded-full border border-border px-3 py-1.5 text-sm hover:bg-muted transition-colors">首頁</Link>
+            <Link href="/spots" className="rounded-full border border-border px-3 py-1.5 text-sm hover:bg-muted transition-colors">熱門釣點</Link>
             <h1 className="text-xl font-bold">{spot.name}</h1>
           </div>
           <ThemeToggle />
@@ -91,12 +92,12 @@ export default function SpotDetailPage() {
 
       <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 space-y-10">
 
-        {/* 釣點基本資訊 */}
+        {/* 釣點基本資訊區塊 */}
         <section className="rounded-2xl border border-border bg-card/60 p-6">
           <div className="mb-3 flex items-center gap-3">
             <h2 className="text-2xl font-bold">{spot.name}</h2>
             <span className="rounded-full bg-blue-100 dark:bg-blue-900/40 px-3 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-300">
-              {spot.water_type}
+              {spot.water_type}域
             </span>
           </div>
           <p className="mb-2 text-sm text-muted-foreground">{spot.location}</p>
@@ -108,7 +109,7 @@ export default function SpotDetailPage() {
               ))}
             </div>
             <span className="text-sm text-muted-foreground">
-              {avgRating > 0 ? avgRating.toFixed(1) : "No reviews"} ({reviews.length} reviews)
+              {avgRating > 0 ? avgRating.toFixed(1) : "暫無評分"} ({reviews.length} 則評價)
             </span>
           </div>
           {tags.length > 0 && (
@@ -120,11 +121,11 @@ export default function SpotDetailPage() {
           )}
         </section>
 
-        {/* 魚種 */}
+        {/* 常見目標魚種 */}
         <section>
-          <h3 className="mb-4 text-lg font-bold">Fish Species at This Spot</h3>
+          <h3 className="mb-4 text-lg font-bold">此釣點常見魚種</h3>
           {fishes.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No fish species data.</p>
+            <p className="text-sm text-muted-foreground">暫無此釣點的目標魚種資料。</p>
           ) : (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {fishes.map((fish) => (
@@ -134,25 +135,25 @@ export default function SpotDetailPage() {
                   className="rounded-2xl border border-border bg-card/60 p-4 transition-all hover:scale-[1.02] hover:border-primary/50 hover:shadow-md"
                 >
                   <p className="font-semibold">{fish.name}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">Abundance: {fish.abundance}</p>
-                  <p className="text-xs text-muted-foreground">Best season: {fish.best_season}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">數量豐富度：{fish.abundance}</p>
+                  <p className="text-xs text-muted-foreground">最佳作釣季節：{fish.best_season}</p>
                 </Link>
               ))}
             </div>
           )}
         </section>
 
-        {/* 新增評價 */}
+        {/* 撰寫評論表單 */}
         <section className="rounded-2xl border border-border bg-card/60 p-6">
-          <h3 className="mb-4 text-lg font-bold">Leave a Review</h3>
+          <h3 className="mb-4 text-lg font-bold">發表釣點評價</h3>
           {success && (
             <div className="mb-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 px-4 py-3 text-sm text-green-700 dark:text-green-400">
-              Review submitted!
+              評價已成功送出！
             </div>
           )}
           <form onSubmit={handleReview} className="flex flex-col gap-4">
             <div>
-              <label className="mb-2 block text-xs font-medium uppercase tracking-wider text-muted-foreground">Rating</label>
+              <label className="mb-2 block text-xs font-medium uppercase tracking-wider text-muted-foreground">點擊星星評分</label>
               <div className="flex gap-2">
                 {[1,2,3,4,5].map((s) => (
                   <button
@@ -167,10 +168,10 @@ export default function SpotDetailPage() {
               </div>
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-muted-foreground">Comment</label>
+              <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-muted-foreground">心得評論</label>
               <textarea
                 rows={3}
-                placeholder="Share your experience..."
+                placeholder="分享你在這個釣點的作釣經驗、咬況或注意事項..."
                 className={inputClass}
                 value={reviewForm.review_content}
                 onChange={(e) => setReviewForm((f) => ({ ...f, review_content: e.target.value }))}
@@ -181,16 +182,16 @@ export default function SpotDetailPage() {
               disabled={submitting}
               className="inline-flex items-center justify-center rounded-xl bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition"
             >
-              {submitting ? "Submitting..." : "Submit Review"}
+              {submitting ? "提交中..." : "送出評價"}
             </button>
           </form>
         </section>
 
-        {/* 評價列表 */}
+        {/* 歷史評價列表 */}
         <section>
-          <h3 className="mb-4 text-lg font-bold">Reviews ({reviews.length})</h3>
+          <h3 className="mb-4 text-lg font-bold">釣友評價紀錄 ({reviews.length})</h3>
           {reviews.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No reviews yet. Be the first!</p>
+            <p className="text-sm text-muted-foreground">目前暫無評價。快來分享你的第一手釣況吧！</p>
           ) : (
             <div className="flex flex-col gap-3">
               {reviews.map((r) => (
