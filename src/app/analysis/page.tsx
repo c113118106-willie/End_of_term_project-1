@@ -129,6 +129,7 @@ export default function AnalysisPage() {
     supabase.from("catch_logs")
       .select("length_cm, weight_kg, fish_species(common_name), fishing_spots(name)")
       .eq("fish_species_id", selectedSpecies.id)
+      .eq("fishing_spot_id", selectedSpot!.id)
       .order("length_cm", { ascending: false })
       .limit(5)
       .then(({ data }) => {
