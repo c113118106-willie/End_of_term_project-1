@@ -58,7 +58,7 @@ export function CatchLeaderboard() {
           throw fetchError;
         }
 
-        setRecords(data || []);
+        setRecords((data as any) || []);
       } catch (err) {
         const message = err instanceof Error ? err.message : "Query failed";
         setError(message);
@@ -135,11 +135,12 @@ export function CatchLeaderboard() {
           <div className="space-y-6">
             {records.map((record, index) => {
               const rank = index + 1;
-              const badgeColor = {
+              const badgeColorMap: Record<number, string> = {
                 1: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
                 2: "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200",
                 3: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
-              }[rank as keyof typeof badgeColor] || "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
+              };
+              const badgeColor = badgeColorMap[rank] || "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
 
               const fishName =
                 (record.fish_species as any)?.common_name || "Unknown species";
