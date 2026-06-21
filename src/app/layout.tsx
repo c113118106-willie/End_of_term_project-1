@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 
@@ -12,7 +12,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// Claude 招牌的優雅 serif，用於大標 display
+// 字體設定
 const instrumentSerif = Instrument_Serif({
   variable: "--font-instrument-serif",
   subsets: ["latin"],
@@ -20,17 +20,17 @@ const instrumentSerif = Instrument_Serif({
   style: ["normal", "italic"],
 });
 
+// 已修改：網頁名稱與描述中文化，移除所有亂碼
 export const metadata: Metadata = {
-  title: "ClassWall · 匿名問答牆",
-  description:
-    "5 小時 AI 程式開發實戰：用 Next.js + Supabase + Copilot 打造的匿名問答牆。",
+  title: "全台釣友巨物俱樂部",
+  description: "全台熱門釣點導覽、釣果戰績紀錄與數據分析系統",
 };
 
-// 防止 FOUC：hydration 前先依 localStorage / 系統偏好套上 .dark
+// 避免深色模式閃爍（FOUC）：由 localStorage 或系統偏好決定是否加上 .dark class
 const themeInitScript = `
 (function(){
   try {
-    var t = localStorage.getItem("classwall:theme");
+    var t = localStorage.getItem("fishing:theme");
     var sys = window.matchMedia("(prefers-color-scheme: dark)").matches;
     var dark = t === "dark" || (!t && sys);
     if (dark) document.documentElement.classList.add("dark");
