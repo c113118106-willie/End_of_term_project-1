@@ -9,6 +9,8 @@ import { StatsPill } from "@/components/stats-pill";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useQuestions } from "@/lib/use-questions";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
+
 
 const PAGE_SIZE = 10;
 
@@ -17,7 +19,7 @@ export default function Home() {
     useQuestions(PAGE_SIZE);
   const spotlightRef = useRef<HTMLDivElement>(null);
 
-  // 滑鼠跟隨光暈：直接寫 CSS var，零 React 介入
+  // �?�?�???��?????�???��?�寫 CSS var�???? React �????
   useEffect(() => {
     function onMove(e: MouseEvent) {
       const el = spotlightRef.current;
@@ -29,7 +31,7 @@ export default function Home() {
     return () => window.removeEventListener("pointermove", onMove);
   }, []);
 
-  // 排序由 DB + useQuestions hook 統一負責，這裡直接渲染
+  // ???�???? DB + useQuestions hook 統�??�?責�?????裡�?��?�渲???
   const totalLikes = useMemo(
     () => questions.reduce((sum, q) => sum + q.likes, 0),
     [questions]
@@ -73,11 +75,17 @@ export default function Home() {
           >
             <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
               <span className="inline-block h-px w-6 bg-foreground/30" />
-              <span>AI × 教學 · 2026</span>
+              <span>AI ?? ???�? · 2026</span>
             </div>
-                <div className="lg:hidden">
-                  <ThemeToggle />
-                </div>
+            <div className="lg:hidden flex items-center gap-2">
+                  <Link
+                    href="/leaderboard"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card/70 px-3 py-1.5 text-[12px] font-medium backdrop-blur-md hover:border-primary/60 hover:bg-primary/10 hover:text-primary transition-colors"
+                  >
+                    ? �j���Ʀ�]
+                </Link>
+                <ThemeToggle />
+            </div>
           </motion.div>
 
           <motion.h1
@@ -99,11 +107,11 @@ export default function Home() {
             }}
             className="max-w-2xl text-[15px] leading-relaxed text-muted-foreground sm:text-base"
           >
-            一道屬於這間教室的匿名問答牆——
+            �????屬�?��????????室�????��?????�??????????
             <span className="font-display italic text-foreground">
-              想問什麼，就大方問
+              ??��??�?麼�??就大??��??
             </span>
-            。 即時同步、按讚衝榜、誰都看得到。
+            ??? ??��?????步�?????�?�?�????誰�?��??�???��??
           </motion.p>
 
           <motion.div
@@ -113,11 +121,11 @@ export default function Home() {
             }}
             className="flex flex-wrap items-center gap-2 pt-1"
           >
-            <StatsPill label="問題" value={questions.length} />
-            <StatsPill label="總 +1" value={totalLikes} accent />
+            <StatsPill label="???�?" value={questions.length} />
+            <StatsPill label="�? +1" value={totalLikes} accent />
             <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-card/60 backdrop-blur-md px-3 py-1.5 text-[12px]">
               <span className="live-dot" aria-hidden />
-              <span className="text-muted-foreground">即時連線中</span>
+              <span className="text-muted-foreground">??��?????�?�?</span>
             </span>
           </motion.div>
 
@@ -129,13 +137,13 @@ export default function Home() {
                 className="flex flex-wrap items-center gap-3 pt-2"
               >
                 <span className="inline-flex items-center rounded-full border border-border/65 bg-background/65 px-3 py-1 text-[11px] tracking-[0.18em] text-muted-foreground">
-                  匿名提問
+                  ??��????????
                 </span>
                 <span className="inline-flex items-center rounded-full border border-border/65 bg-background/65 px-3 py-1 text-[11px] tracking-[0.18em] text-muted-foreground">
-                  即時更新
+                  ??��????��??
                 </span>
                 <span className="inline-flex items-center rounded-full border border-border/65 bg-background/65 px-3 py-1 text-[11px] tracking-[0.18em] text-muted-foreground">
-                  全班可見
+                  ??��?��?��??
                 </span>
               </motion.div>
             </div>
@@ -152,26 +160,26 @@ export default function Home() {
               </div>
               <div className="space-y-1">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-                  班級節奏
+                  ??��??�?�?
                 </p>
                 <p className="font-display text-2xl italic leading-none">
                   Ask. Vote. Flow.
                 </p>
               </div>
               <p className="text-xs leading-relaxed text-muted-foreground">
-                問題會依熱度排序，讓真正想被討論的題目浮上來。
+                ???�????�???�度???�?�?�????�???�被�?�????�???�浮�?�????
               </p>
             </motion.aside>
           </div>
         </motion.header>
 
-        {/* ============ 發問區 ============ */}
-        <section aria-label="發問區">
+        {/* ============ ??��????? ============ */}
+        <section aria-label="??��?????">
           <QuestionForm />
         </section>
 
-        {/* ============ 問題列表 ============ */}
-        <section aria-label="問題列表" className="flex flex-col gap-3">
+        {/* ============ ???�????�? ============ */}
+        <section aria-label="???�????�?" className="flex flex-col gap-3">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -179,10 +187,10 @@ export default function Home() {
             className="flex items-baseline justify-between gap-3"
           >
             <h2 className="font-display text-2xl tracking-tight sm:text-3xl">
-              牆上的問題
+              ???�???????�?
             </h2>
             <span className="text-[11px] uppercase tracking-wider text-muted-foreground">
-              依讚數排序 · 每頁 {PAGE_SIZE} 題
+              �?�???��??�? · �???? {PAGE_SIZE} �?
             </span>
           </motion.div>
 
@@ -190,7 +198,7 @@ export default function Home() {
             <SkeletonList />
           ) : error ? (
             <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-6 text-center text-sm text-destructive">
-              讀取失敗：{error}
+              �????失�??�?{error}
             </div>
           ) : questions.length === 0 ? (
             <motion.div
@@ -199,10 +207,10 @@ export default function Home() {
               className="rounded-2xl border border-dashed border-border/70 bg-card/40 py-16 text-center"
             >
               <p className="font-display text-2xl italic text-muted-foreground">
-                還沒有人發問
+                ???�????人�?��??
               </p>
               <p className="mt-2 text-sm text-muted-foreground/80">
-                你來當第一個 ✨
+                �?�???�第�???? ???
               </p>
             </motion.div>
           ) : (
@@ -213,7 +221,7 @@ export default function Home() {
                 ))}
               </AnimatePresence>
 
-              {/* 載入更多 / 已到底 */}
+              {/* �???��?��?? / 已�?��?? */}
               <div className="pt-2 flex justify-center">
                 {hasMore ? (
                   <motion.button
@@ -243,18 +251,18 @@ export default function Home() {
                           }}
                           className="h-3.5 w-3.5 rounded-full border-2 border-foreground/40 border-t-primary"
                         />
-                        <span>載入中…</span>
+                        <span>�???�中???</span>
                       </>
                     ) : (
                       <>
-                        <span>載入更多</span>
-                        <span aria-hidden>↓</span>
+                        <span>�???��?��??</span>
+                        <span aria-hidden>???</span>
                       </>
                     )}
                   </motion.button>
                 ) : (
                   <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground/70">
-                    — 沒有更多了 —
+                    ??? �??????��??�? ???
                   </p>
                 )}
               </div>
