@@ -34,7 +34,13 @@ export default function Home() {
                 href="/leaderboard"
                 className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card/70 px-4 py-2 text-[13px] font-medium backdrop-blur-md hover:border-primary/60 hover:bg-primary/10 hover:text-primary transition-colors"
               >
-                🏆 Leaderboard
+                Leaderboard
+              </Link>
+              <Link
+                href="/analysis"
+                className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card/70 px-4 py-2 text-[13px] font-medium backdrop-blur-md hover:border-primary/60 hover:bg-primary/10 hover:text-primary transition-colors"
+              >
+                Analysis
               </Link>
             </div>
           </div>
