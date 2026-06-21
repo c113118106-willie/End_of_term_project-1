@@ -85,7 +85,7 @@ export function CatchForm({ onSuccess }: { onSuccess?: () => void }) {
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
       {success && (
         <div className="rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 px-4 py-3 text-sm text-green-700 dark:text-green-400">
-          Catch recorded! Check the leaderboard. ?
+          Catch recorded! Check the leaderboard. ğŸ£
         </div>
       )}
       {error && (
@@ -95,7 +95,7 @@ export function CatchForm({ onSuccess }: { onSuccess?: () => void }) {
       )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {/* ³¨ÂI */}
+        {/* é‡£é» */}
         <div>
           <label className={labelClass}>Fishing Spot *</label>
           <select className={inputClass} value={form.fishing_spot_id} onChange={(e) => set("fishing_spot_id", e.target.value)}>
@@ -104,7 +104,7 @@ export function CatchForm({ onSuccess }: { onSuccess?: () => void }) {
           </select>
         </div>
 
-        {/* ³½ºØ */}
+        {/* é­šç¨® */}
         <div>
           <label className={labelClass}>Fish Species *</label>
           <select className={inputClass} value={form.fish_species_id} onChange={(e) => set("fish_species_id", e.target.value)}>
@@ -113,7 +113,7 @@ export function CatchForm({ onSuccess }: { onSuccess?: () => void }) {
           </select>
         </div>
 
-        {/* »ç®Æ */}
+        {/* é¤Œæ–™ */}
         <div>
           <label className={labelClass}>Bait Used</label>
           <select className={inputClass} value={form.bait_id} onChange={(e) => set("bait_id", e.target.value)}>
@@ -122,19 +122,19 @@ export function CatchForm({ onSuccess }: { onSuccess?: () => void }) {
           </select>
         </div>
 
-        {/* Åéªø */}
+        {/* é«”é•· */}
         <div>
           <label className={labelClass}>Length (cm) *</label>
           <input type="number" min="0" step="0.1" placeholder="e.g. 45" className={inputClass} value={form.length_cm} onChange={(e) => set("length_cm", e.target.value)} />
         </div>
 
-        {/* ­«¶q */}
+        {/* é‡é‡ */}
         <div>
           <label className={labelClass}>Weight (kg)</label>
           <input type="number" min="0" step="0.01" placeholder="e.g. 1.2" className={inputClass} value={form.weight_kg} onChange={(e) => set("weight_kg", e.target.value)} />
         </div>
 
-        {/* ¼é¦Á */}
+        {/* æ½®æ± */}
         <div>
           <label className={labelClass}>Tide Status</label>
           <select className={inputClass} value={form.tide_status} onChange={(e) => set("tide_status", e.target.value)}>
@@ -146,7 +146,7 @@ export function CatchForm({ onSuccess }: { onSuccess?: () => void }) {
           </select>
         </div>
 
-        {/* §@³¨®É¬q */}
+        {/* ä½œé‡£æ™‚æ®µ */}
         <div>
           <label className={labelClass}>Fishing Period</label>
           <select className={inputClass} value={form.fishing_period} onChange={(e) => set("fishing_period", e.target.value)}>
@@ -159,7 +159,7 @@ export function CatchForm({ onSuccess }: { onSuccess?: () => void }) {
           </select>
         </div>
 
-        {/* ­·¦V */}
+        {/* é¢¨å‘ */}
         <div>
           <label className={labelClass}>Wind Direction</label>
           <select className={inputClass} value={form.wind_direction} onChange={(e) => set("wind_direction", e.target.value)}>
@@ -175,14 +175,14 @@ export function CatchForm({ onSuccess }: { onSuccess?: () => void }) {
           </select>
         </div>
 
-        {/* ¤ô·Å */}
+        {/* æ°´æº« */}
         <div>
-          <label className={labelClass}>Water Temp (¢XC)</label>
+          <label className={labelClass}>Water Temp (Â°C)</label>
           <input type="number" min="0" max="40" step="0.1" placeholder="e.g. 24" className={inputClass} value={form.water_temperature_celsius} onChange={(e) => set("water_temperature_celsius", e.target.value)} />
         </div>
       </div>
 
-      {/* ³Æµù */}
+      {/* å‚™è¨» */}
       <div>
         <label className={labelClass}>Notes</label>
         <textarea rows={3} placeholder="Any tips or notes about this catch..." className={inputClass} value={form.notes} onChange={(e) => set("notes", e.target.value)} />
@@ -193,7 +193,7 @@ export function CatchForm({ onSuccess }: { onSuccess?: () => void }) {
         disabled={submitting}
         className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
       >
-        {submitting ? "Submitting..." : "? Submit Catch"}
+        {submitting ? "Submitting..." : "ğŸ£ Submit Catch"}
       </button>
     </form>
   );
