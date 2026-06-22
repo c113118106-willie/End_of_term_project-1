@@ -16,13 +16,14 @@ interface Spot {
   tags: string[];
 }
 
+interface TagOption { id: string; tag_name: string; }
+interface SpeciesOption { id: string; common_name: string; }
+
 const defaultForm = {
   name: "",
   location: "",
   water_type: "海",
   description: "",
-  lat: "",
-  lng: "",
 };
 
 export default function SpotsPage() {
@@ -34,7 +35,21 @@ export default function SpotsPage() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // 標籤相關
+  const [allTags, setAllTags] = useState<TagOption[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+
+  // 魚種相關
+  const [allSpecies, setAllSpecies] = useState<SpeciesOption[]>([]);
+  const [selectedSpecies, setSelectedSpecies] = useState<string[]>([]);
+
   const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
+
+  const toggleTag = (id: string) =>
+    setSelectedTags((prev) => prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]);
+
+  const toggleSpecies = (id: string) =>
+    setSelectedSpecies((prev) => prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]);
 
   async function loadSpots() {
     const { data: spotsData } = await supabase
@@ -59,7 +74,11 @@ export default function SpotsPage() {
     setLoading(false);
   }
 
-  useEffect(() => { loadSpots(); }, []);
+  useEffect(() => {
+    loadSpots();
+    supabase.from("tags").select("id, tag_name").then(({ data }) => setAllTags(data ?? []));
+    supabase.from("fish_species").select("id, common_name").then(({ data }) => setAllSpecies(data ?? []));
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,25 +89,50 @@ export default function SpotsPage() {
     setSubmitting(true);
     setError(null);
 
-    const { error: err } = await supabase.from("fishing_spots").insert({
-      name: form.name,
-      location: form.location,
-      water_type: form.water_type,
-      description: form.description || null,
-      coordinates: `(${form.lng || 0}, ${form.lat || 0})`,
-    });
+    // 新增釣點
+    const { data: newSpot, error: spotErr } = await supabase
+      .from("fishing_spots")
+      .insert({
+        name: form.name,
+        location: form.location,
+        water_type: form.water_type,
+        description: form.description || null,
+        coordinates: "(0,0)",
+      })
+      .select("id")
+      .single();
+
+    if (spotErr || !newSpot) {
+      setError(spotErr?.message ?? "新增失敗");
+      setSubmitting(false);
+      return;
+    }
+
+    const spotId = newSpot.id;
+
+    // 新增標籤關聯
+    if (selectedTags.length > 0) {
+      await supabase.from("spot_tag_mapping").insert(
+        selectedTags.map((tag_id) => ({ fishing_spot_id: spotId, tag_id }))
+      );
+    }
+
+    // 新增魚種關聯
+    if (selectedSpecies.length > 0) {
+      await supabase.from("spot_fish_mapping").insert(
+        selectedSpecies.map((fish_species_id) => ({ fishing_spot_id: spotId, fish_species_id }))
+      );
+    }
 
     setSubmitting(false);
-    if (err) {
-      setError(err.message);
-    } else {
-      setSuccess(true);
-      setForm(defaultForm);
-      setShowForm(false);
-      setTimeout(() => setSuccess(false), 3000);
-      setLoading(true);
-      loadSpots();
-    }
+    setSuccess(true);
+    setForm(defaultForm);
+    setSelectedTags([]);
+    setSelectedSpecies([]);
+    setShowForm(false);
+    setTimeout(() => setSuccess(false), 3000);
+    setLoading(true);
+    loadSpots();
   };
 
   const waterTypeColor: Record<string, string> = {
@@ -128,14 +172,12 @@ export default function SpotsPage() {
           </button>
         </div>
 
-        {/* 成功訊息 */}
         {success && (
           <div className="mb-6 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 px-4 py-3 text-sm text-green-700 dark:text-green-400">
             釣點新增成功！
           </div>
         )}
 
-        {/* 新增釣點表單 */}
         {showForm && (
           <div className="mb-8 rounded-2xl border border-border bg-card/60 p-6">
             <h3 className="mb-6 text-lg font-bold">新增釣點</h3>
@@ -144,27 +186,16 @@ export default function SpotsPage() {
                 {error}
               </div>
             )}
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+              {/* 基本資訊 */}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label className={labelClass}>釣點名稱 *</label>
-                  <input
-                    type="text"
-                    placeholder="例：野柳外礁"
-                    className={inputClass}
-                    value={form.name}
-                    onChange={(e) => set("name", e.target.value)}
-                  />
+                  <input type="text" placeholder="例：野柳外礁" className={inputClass} value={form.name} onChange={(e) => set("name", e.target.value)} />
                 </div>
                 <div>
                   <label className={labelClass}>地點 *</label>
-                  <input
-                    type="text"
-                    placeholder="例：新北市萬里區"
-                    className={inputClass}
-                    value={form.location}
-                    onChange={(e) => set("location", e.target.value)}
-                  />
+                  <input type="text" placeholder="例：新北市萬里區" className={inputClass} value={form.location} onChange={(e) => set("location", e.target.value)} />
                 </div>
                 <div>
                   <label className={labelClass}>水域類型 *</label>
@@ -174,39 +205,55 @@ export default function SpotsPage() {
                     <option value="池">池釣</option>
                   </select>
                 </div>
-                <div>
-                  <label className={labelClass}>緯度</label>
-                  <input
-                    type="number"
-                    step="0.0001"
-                    placeholder="例：25.21"
-                    className={inputClass}
-                    value={form.lat}
-                    onChange={(e) => set("lat", e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label className={labelClass}>經度</label>
-                  <input
-                    type="number"
-                    step="0.0001"
-                    placeholder="例：121.73"
-                    className={inputClass}
-                    value={form.lng}
-                    onChange={(e) => set("lng", e.target.value)}
-                  />
-                </div>
               </div>
+
               <div>
                 <label className={labelClass}>簡介</label>
-                <textarea
-                  rows={3}
-                  placeholder="描述這個釣點的特色..."
-                  className={inputClass}
-                  value={form.description}
-                  onChange={(e) => set("description", e.target.value)}
-                />
+                <textarea rows={3} placeholder="描述這個釣點的特色..." className={inputClass} value={form.description} onChange={(e) => set("description", e.target.value)} />
               </div>
+
+              {/* 標籤選擇 */}
+              <div>
+                <label className={labelClass}>釣點標籤（可複選）</label>
+                <div className="flex flex-wrap gap-2">
+                  {allTags.map((tag) => (
+                    <button
+                      key={tag.id}
+                      type="button"
+                      onClick={() => toggleTag(tag.id)}
+                      className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                        selectedTags.includes(tag.id)
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border bg-muted/50 text-muted-foreground hover:border-primary/50"
+                      }`}
+                    >
+                      #{tag.tag_name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 魚種選擇 */}
+              <div>
+                <label className={labelClass}>此釣點的目標魚種（可複選）</label>
+                <div className="flex flex-wrap gap-2">
+                  {allSpecies.map((sp) => (
+                    <button
+                      key={sp.id}
+                      type="button"
+                      onClick={() => toggleSpecies(sp.id)}
+                      className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                        selectedSpecies.includes(sp.id)
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border bg-muted/50 text-muted-foreground hover:border-primary/50"
+                      }`}
+                    >
+                      {sp.common_name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div className="flex gap-3">
                 <button
                   type="submit"
@@ -217,7 +264,7 @@ export default function SpotsPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => { setShowForm(false); setError(null); setForm(defaultForm); }}
+                  onClick={() => { setShowForm(false); setError(null); setForm(defaultForm); setSelectedTags([]); setSelectedSpecies([]); }}
                   className="inline-flex items-center justify-center rounded-xl border border-border px-6 py-2.5 text-sm font-medium hover:bg-muted transition"
                 >
                   取消
@@ -227,7 +274,6 @@ export default function SpotsPage() {
           </div>
         )}
 
-        {/* 釣點列表 */}
         {loading ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {[...Array(6)].map((_, i) => (
