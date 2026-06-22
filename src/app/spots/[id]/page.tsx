@@ -6,15 +6,10 @@ import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
 
-interface SpotDetail {
-  id: string;
-  name: string;
-  location: string;
-  water_type: string;
-  description: string;
-}
+interface SpotDetail { id: string; name: string; location: string; water_type: string; description: string; }
 interface Review { id: string; rating: number; review_content: string; created_at: string; }
 interface FishEntry { id: string; name: string; abundance: string; best_season: string; }
+interface SpeciesOption { id: string; common_name: string; }
 
 export default function SpotDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -27,31 +22,72 @@ export default function SpotDetailPage() {
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  // 修改魚種相關
+  const [showEditFish, setShowEditFish] = useState(false);
+  const [allSpecies, setAllSpecies] = useState<SpeciesOption[]>([]);
+  const [selectedSpecies, setSelectedSpecies] = useState<string[]>([]);
+  const [fishSubmitting, setFishSubmitting] = useState(false);
+  const [fishSuccess, setFishSuccess] = useState(false);
+
+  async function loadFishes() {
+    const { data } = await supabase
+      .from("spot_fish_mapping")
+      .select("fish_species(id, common_name), abundance, best_season")
+      .eq("fishing_spot_id", id);
+    const list = (data ?? []).map((f: any) => ({
+      id: f.fish_species?.id,
+      name: f.fish_species?.common_name,
+      abundance: f.abundance,
+      best_season: f.best_season,
+    }));
+    setFishes(list);
+    setSelectedSpecies(list.map((f) => f.id));
+  }
+
   useEffect(() => {
     async function load() {
-      const [spotRes, reviewRes, tagRes, fishRes] = await Promise.all([
+      const [spotRes, reviewRes, tagRes] = await Promise.all([
         supabase.from("fishing_spots").select("*").eq("id", id).single(),
         supabase.from("spot_reviews").select("*").eq("fishing_spot_id", id).order("created_at", { ascending: false }),
         supabase.from("spot_tag_mapping").select("tags(tag_name)").eq("fishing_spot_id", id),
-        supabase.from("spot_fish_mapping").select("fish_species(id, common_name), abundance, best_season").eq("fishing_spot_id", id),
       ]);
       setSpot(spotRes.data);
       setReviews(reviewRes.data ?? []);
       setTags((tagRes.data ?? []).map((t: any) => t.tags?.tag_name).filter(Boolean));
-      setFishes((fishRes.data ?? []).map((f: any) => ({
-        id: f.fish_species?.id,
-        name: f.fish_species?.common_name,
-        abundance: f.abundance,
-        best_season: f.best_season,
-      })));
+      await loadFishes();
       setLoading(false);
     }
+
+    supabase.from("fish_species").select("id, common_name").then(({ data }) => setAllSpecies(data ?? []));
     load();
   }, [id]);
 
   const avgRating = reviews.length
     ? reviews.reduce((a, b) => a + b.rating, 0) / reviews.length
     : 0;
+
+  const toggleSpecies = (sid: string) =>
+    setSelectedSpecies((prev) => prev.includes(sid) ? prev.filter((s) => s !== sid) : [...prev, sid]);
+
+  const handleSaveFish = async () => {
+    setFishSubmitting(true);
+
+    // 先刪除現有關聯
+    await supabase.from("spot_fish_mapping").delete().eq("fishing_spot_id", id);
+
+    // 重新新增選取的魚種
+    if (selectedSpecies.length > 0) {
+      await supabase.from("spot_fish_mapping").insert(
+        selectedSpecies.map((fish_species_id) => ({ fishing_spot_id: id, fish_species_id }))
+      );
+    }
+
+    await loadFishes();
+    setFishSubmitting(false);
+    setFishSuccess(true);
+    setShowEditFish(false);
+    setTimeout(() => setFishSuccess(false), 3000);
+  };
 
   const handleReview = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,7 +99,6 @@ export default function SpotDetailPage() {
       rating: reviewForm.rating,
       review_content: reviewForm.review_content,
     });
-    setSubmitting(true); // 修正：這裏應保持原邏輯或設為 false
     setSubmitting(false);
     setSuccess(true);
     setReviewForm({ rating: 5, review_content: "" });
@@ -83,7 +118,7 @@ export default function SpotDetailPage() {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
           <div className="flex items-center gap-3">
             <Link href="/" className="rounded-full border border-border px-3 py-1.5 text-sm hover:bg-muted transition-colors">首頁</Link>
-            <Link href="/spots" className="rounded-full border border-border px-3 py-1.5 text-sm hover:bg-muted transition-colors">熱門釣點</Link>
+            <Link href="/spots" className="rounded-full border border-border px-3 py-1.5 text-sm hover:bg-muted transition-colors">釣點總覽</Link>
             <h1 className="text-xl font-bold">{spot.name}</h1>
           </div>
           <ThemeToggle />
@@ -92,7 +127,7 @@ export default function SpotDetailPage() {
 
       <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 space-y-10">
 
-        {/* 釣點基本資訊區塊 */}
+        {/* 基本資訊 */}
         <section className="rounded-2xl border border-border bg-card/60 p-6">
           <div className="mb-3 flex items-center gap-3">
             <h2 className="text-2xl font-bold">{spot.name}</h2>
@@ -121,9 +156,62 @@ export default function SpotDetailPage() {
           )}
         </section>
 
-        {/* 常見目標魚種 */}
+        {/* 常見魚種 */}
         <section>
-          <h3 className="mb-4 text-lg font-bold">此釣點常見魚種</h3>
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="text-lg font-bold">此釣點常見魚種</h3>
+            <button
+              onClick={() => setShowEditFish(!showEditFish)}
+              className="rounded-full border border-border px-3 py-1.5 text-xs hover:bg-muted hover:border-primary/50 transition-colors"
+            >
+              {showEditFish ? "取消修改" : "✏️ 修改魚種"}
+            </button>
+          </div>
+
+          {fishSuccess && (
+            <div className="mb-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 px-4 py-3 text-sm text-green-700 dark:text-green-400">
+              魚種資料已更新！
+            </div>
+          )}
+
+          {/* 修改魚種面板 */}
+          {showEditFish && (
+            <div className="mb-6 rounded-2xl border border-border bg-card/60 p-5">
+              <p className="mb-3 text-sm text-muted-foreground">勾選此釣點的目標魚種（已勾選為目前設定）</p>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {allSpecies.map((sp) => (
+                  <button
+                    key={sp.id}
+                    type="button"
+                    onClick={() => toggleSpecies(sp.id)}
+                    className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                      selectedSpecies.includes(sp.id)
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border bg-muted/50 text-muted-foreground hover:border-primary/50"
+                    }`}
+                  >
+                    {sp.common_name}
+                  </button>
+                ))}
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={handleSaveFish}
+                  disabled={fishSubmitting}
+                  className="inline-flex items-center justify-center rounded-xl bg-primary px-5 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50 transition"
+                >
+                  {fishSubmitting ? "儲存中..." : "儲存魚種"}
+                </button>
+                <button
+                  onClick={() => { setShowEditFish(false); setSelectedSpecies(fishes.map((f) => f.id)); }}
+                  className="inline-flex items-center justify-center rounded-xl border border-border px-5 py-2 text-sm hover:bg-muted transition"
+                >
+                  取消
+                </button>
+              </div>
+            </div>
+          )}
+
           {fishes.length === 0 ? (
             <p className="text-sm text-muted-foreground">暫無此釣點的目標魚種資料。</p>
           ) : (
@@ -136,14 +224,14 @@ export default function SpotDetailPage() {
                 >
                   <p className="font-semibold">{fish.name}</p>
                   <p className="mt-1 text-xs text-muted-foreground">數量豐富度：{fish.abundance}</p>
-                  <p className="text-xs text-muted-foreground">最佳作釣季節：{fish.best_season}</p>
+                  <p className="text-xs text-muted-foreground">最佳季節：{fish.best_season}</p>
                 </Link>
               ))}
             </div>
           )}
         </section>
 
-        {/* 撰寫評論表單 */}
+        {/* 發表評價 */}
         <section className="rounded-2xl border border-border bg-card/60 p-6">
           <h3 className="mb-4 text-lg font-bold">發表釣點評價</h3>
           {success && (
@@ -187,11 +275,11 @@ export default function SpotDetailPage() {
           </form>
         </section>
 
-        {/* 歷史評價列表 */}
+        {/* 評價列表 */}
         <section>
           <h3 className="mb-4 text-lg font-bold">釣友評價紀錄 ({reviews.length})</h3>
           {reviews.length === 0 ? (
-            <p className="text-sm text-muted-foreground">目前暫無評價。快來分享你的第一手釣況吧！</p>
+            <p className="text-sm text-muted-foreground">目前暫無評價，快來分享你的釣況吧！</p>
           ) : (
             <div className="flex flex-col gap-3">
               {reviews.map((r) => (
@@ -203,7 +291,7 @@ export default function SpotDetailPage() {
                       ))}
                     </div>
                     <span className="text-xs text-muted-foreground">
-                      {new Date(r.created_at).toLocaleDateString()}
+                      {new Date(r.created_at).toLocaleDateString("zh-TW")}
                     </span>
                   </div>
                   <p className="text-sm leading-relaxed">{r.review_content}</p>
