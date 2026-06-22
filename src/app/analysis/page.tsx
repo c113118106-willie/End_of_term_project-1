@@ -55,71 +55,76 @@ export default function AnalysisPage() {
     });
   }, []);
 
+  // 💡 已修正：點選釣點時，直接從 catch_logs 一併撈出實際使用的 baits(name)
   useEffect(() => {
     if (!selectedSpot) return;
     setLoadingL2(true);
     setSelectedSpecies(null);
     setFishBaits([]);
 
-    Promise.all([
-      supabase.from("catch_logs").select("fish_species_id, fish_species(common_name)").eq("fishing_spot_id", selectedSpot.id),
-      supabase.from("catch_logs").select("fish_species_id").eq("fishing_spot_id", selectedSpot.id),
-    ]).then(async ([speciesRes, catchRes]) => {
-      const sm: Record<string, { name: string; count: number }> = {};
-      (speciesRes.data ?? []).forEach((r: any) => {
-        const id = r.fish_species_id;
-        const name = r.fish_species?.common_name ?? "未知";
-        if (!sm[id]) sm[id] = { name, count: 0 };
-        sm[id].count++;
-      });
-      setSpeciesList(Object.entries(sm).map(([id, v]) => ({ id, ...v })));
-
-      const speciesIds = [...new Set((catchRes.data ?? []).map((r: any) => r.fish_species_id))];
-      if (speciesIds.length > 0) {
-        // 💡 已修正：改為從 fish_bait_mapping 撈取 baits 資料
-        const { data: baitData } = await supabase.from("fish_bait_mapping").select("baits(name)").in("fish_species_id", speciesIds);
+    // 單一請求同時搞定「魚種分布」與「該釣點的實際用餌分布」
+    supabase.from("catch_logs")
+      .select("fish_species_id, fish_species(common_name), baits(name)")
+      .eq("fishing_spot_id", selectedSpot.id)
+      .then(async ({ data: catchData }) => {
+        const sm: Record<string, { name: string; count: number }> = {};
         const bm: Record<string, number> = {};
-        (baitData ?? []).forEach((r: any) => {
-          const name = r.baits?.name ?? "未知";
-          bm[name] = (bm[name] ?? 0) + 1;
-        });
-        setSpotBaits(Object.entries(bm).map(([name, count]) => ({ name, count })));
-      } else {
-        setSpotBaits([]);
-      }
 
-      const { data: rankData } = await supabase.from("catch_logs")
-        .select("length_cm, weight_kg, fish_species(common_name), fishing_spots(name)")
-        .eq("fishing_spot_id", selectedSpot.id)
-        .order("length_cm", { ascending: false })
-        .limit(5);
-      setRankings((rankData ?? []).map((r: any, i: number) => ({
-        rank: i + 1,
-        fish: r.fish_species?.common_name ?? "未知",
-        spot: r.fishing_spots?.name ?? "未知",
-        length_cm: r.length_cm,
-        weight_kg: r.weight_kg ?? null,
-      })));
-      setLoadingL2(false);
-    });
+        (catchData ?? []).forEach((r: any) => {
+          // 1. 統計魚種
+          const spId = r.fish_species_id;
+          const spName = r.fish_species?.common_name ?? "未知";
+          if (!sm[spId]) sm[spId] = { name: spName, count: 0 };
+          sm[spId].count++;
+
+          // 2. 統計這筆漁獲實際用的是什麼餌
+          const baitName = r.baits?.name ?? "未知/未記錄";
+          bm[baitName] = (bm[baitName] ?? 0) + 1;
+        });
+
+        setSpeciesList(Object.entries(sm).map(([id, v]) => ({ id, ...v })));
+        setSpotBaits(Object.entries(bm).map(([name, count]) => ({ name, count })));
+
+        // 撈取該釣點排行榜
+        const { data: rankData } = await supabase.from("catch_logs")
+          .select("length_cm, weight_kg, fish_species(common_name), fishing_spots(name)")
+          .eq("fishing_spot_id", selectedSpot.id)
+          .order("length_cm", { ascending: false })
+          .limit(5);
+
+        setRankings((rankData ?? []).map((r: any, i: number) => ({
+          rank: i + 1,
+          fish: r.fish_species?.common_name ?? "未知",
+          spot: r.fishing_spots?.name ?? "未知",
+          length_cm: r.length_cm,
+          weight_kg: r.weight_kg ?? null,
+        })));
+        setLoadingL2(false);
+      });
   }, [selectedSpot]);
 
+  // 💡 已修正：點選特定魚種時，同樣直接去 catch_logs 篩選「該釣點 + 該魚種」的實際用餌
   useEffect(() => {
-    if (!selectedSpecies) return;
-    // 💡 已修正：改為依魚種查詢 fish_bait_mapping
-    supabase.from("fish_bait_mapping").select("baits(name)").eq("fish_species_id", selectedSpecies.id).then(({ data }) => {
-      const bm: Record<string, number> = {};
-      (data ?? []).forEach((r: any) => {
-        const name = r.baits?.name ?? "未知";
-        bm[name] = (bm[name] ?? 0) + 1;
-      });
-      setFishBaits(Object.entries(bm).map(([name, count]) => ({ name, count })));
-    });
+    if (!selectedSpecies || !selectedSpot) return;
 
+    supabase.from("catch_logs")
+      .select("baits(name)")
+      .eq("fishing_spot_id", selectedSpot.id)
+      .eq("fish_species_id", selectedSpecies.id)
+      .then(({ data }) => {
+        const bm: Record<string, number> = {};
+        (data ?? []).forEach((r: any) => {
+          const name = r.baits?.name ?? "未知/未記錄";
+          bm[name] = (bm[name] ?? 0) + 1;
+        });
+        setFishBaits(Object.entries(bm).map(([name, count]) => ({ name, count })));
+      });
+
+    // 撈取該魚種在該釣點的排行榜
     supabase.from("catch_logs")
       .select("length_cm, weight_kg, fish_species(common_name), fishing_spots(name)")
       .eq("fish_species_id", selectedSpecies.id)
-      .eq("fishing_spot_id", selectedSpot!.id)
+      .eq("fishing_spot_id", selectedSpot.id)
       .order("length_cm", { ascending: false })
       .limit(5)
       .then(({ data }) => {
@@ -131,7 +136,7 @@ export default function AnalysisPage() {
           weight_kg: r.weight_kg ?? null,
         })));
       });
-  }, [selectedSpecies]);
+  }, [selectedSpecies, selectedSpot]);
 
   const baitData = selectedSpecies ? fishBaits : spotBaits;
 
@@ -154,7 +159,7 @@ export default function AnalysisPage() {
 
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 space-y-16">
 
-        {/* 第一層 */}
+        {/* 第一層：釣點分布 */}
         <section>
           <h2 className="mb-2 text-2xl font-bold">各釣點漁獲分布</h2>
           <p className="mb-8 text-sm text-muted-foreground">點擊釣點方塊，探索該釣點的詳細資訊。</p>
@@ -193,7 +198,7 @@ export default function AnalysisPage() {
           )}
         </section>
 
-        {/* 第二層 */}
+        {/* 第二層：詳細數據 */}
         {selectedSpot && (
           <section className="space-y-10">
             <div className="flex items-center gap-3">
@@ -230,11 +235,11 @@ export default function AnalysisPage() {
                     )}
                   </div>
 
-                  {/* 💡 已修正：改為「餌料分布」圓餅圖，滑鼠移上去同樣會顯示名稱與筆數 */}
+                  {/* 餌料分布（已修改為顯示實際起魚餌料） */}
                   <div className="rounded-2xl border border-border bg-card/60 p-6">
                     <h3 className="mb-1 font-semibold">餌料分布</h3>
                     <p className="mb-4 text-xs text-muted-foreground">
-                      {selectedSpecies ? `顯示魚種：${selectedSpecies.name} 的推薦餌料` : `顯示釣點：${selectedSpot.name} 的推薦餌料`}
+                      {selectedSpecies ? `顯示魚種：${selectedSpecies.name} 的實際用餌` : `顯示釣點：${selectedSpot.name} 的實際用餌`}
                     </p>
                     {baitData.length === 0 ? (
                       <p className="text-sm text-muted-foreground">尚無餌料資料。</p>
@@ -244,15 +249,17 @@ export default function AnalysisPage() {
                           <Pie data={baitData} dataKey="count" nameKey="name" cx="50%" cy="50%" outerRadius={100} labelLine={false} label={renderCustomLabel}>
                             {baitData.map((_, i) => (
                               <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                                ))}
+                            ))}
                           </Pie>
-                          <Tooltip formatter={(v: any, name: any) => [`${v} 筆紀錄`, name]} />
+                          {/* 提示字同步修改為「筆漁獲」，滑鼠移上去會顯示：[餌料名稱]: 1 筆漁獲 */}
+                          <Tooltip formatter={(v: any, name: any) => [`${v} 筆漁獲`, name]} />
                         </PieChart>
                       </ResponsiveContainer>
                     )}
                   </div>
                 </div>
 
+                {/* 魚種選擇區塊 */}
                 <div>
                   <h3 className="mb-3 font-semibold">魚種選擇</h3>
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
@@ -272,6 +279,7 @@ export default function AnalysisPage() {
                   </div>
                 </div>
 
+                {/* 排行榜區塊 */}
                 <div>
                   <h3 className="mb-3 font-semibold">
                     {selectedSpecies ? `排行榜 · ${selectedSpecies.name}` : `排行榜 · ${selectedSpot.name}`}
