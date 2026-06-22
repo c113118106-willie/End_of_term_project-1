@@ -13,7 +13,7 @@ const COLORS = [
 
 interface SpotData    { id: string; name: string; count: number; }
 interface SpeciesData { id: string; name: string; count: number; }
-interface RigData     { name: string; count: number; }
+interface BaitData    { name: string; count: number; }
 interface RankData    { rank: number; fish: string; spot: string; length_cm: number; weight_kg: number | null; }
 
 const RADIAN = Math.PI / 180;
@@ -36,8 +36,8 @@ export default function AnalysisPage() {
   const [speciesList, setSpeciesList] = useState<SpeciesData[]>([]);
   const [hoverSpecies, setHoverSpecies] = useState<number>(-1);
   const [selectedSpecies, setSelectedSpecies] = useState<SpeciesData | null>(null);
-  const [spotRigs, setSpotRigs] = useState<RigData[]>([]);
-  const [fishRigs, setFishRigs] = useState<RigData[]>([]);
+  const [spotBaits, setSpotBaits] = useState<BaitData[]>([]);
+  const [fishBaits, setFishBaits] = useState<BaitData[]>([]);
   const [rankings, setRankings] = useState<RankData[]>([]);
   const [loadingL2, setLoadingL2] = useState(false);
 
@@ -59,7 +59,7 @@ export default function AnalysisPage() {
     if (!selectedSpot) return;
     setLoadingL2(true);
     setSelectedSpecies(null);
-    setFishRigs([]);
+    setFishBaits([]);
 
     Promise.all([
       supabase.from("catch_logs").select("fish_species_id, fish_species(common_name)").eq("fishing_spot_id", selectedSpot.id),
@@ -76,15 +76,16 @@ export default function AnalysisPage() {
 
       const speciesIds = [...new Set((catchRes.data ?? []).map((r: any) => r.fish_species_id))];
       if (speciesIds.length > 0) {
-        const { data: rigData } = await supabase.from("fish_rig_mapping").select("rigs(name)").in("fish_species_id", speciesIds);
-        const rm: Record<string, number> = {};
-        (rigData ?? []).forEach((r: any) => {
-          const name = r.rigs?.name ?? "未知";
-          rm[name] = (rm[name] ?? 0) + 1;
+        // 💡 已修正：改為從 fish_bait_mapping 撈取 baits 資料
+        const { data: baitData } = await supabase.from("fish_bait_mapping").select("baits(name)").in("fish_species_id", speciesIds);
+        const bm: Record<string, number> = {};
+        (baitData ?? []).forEach((r: any) => {
+          const name = r.baits?.name ?? "未知";
+          bm[name] = (bm[name] ?? 0) + 1;
         });
-        setSpotRigs(Object.entries(rm).map(([name, count]) => ({ name, count })));
+        setSpotBaits(Object.entries(bm).map(([name, count]) => ({ name, count })));
       } else {
-        setSpotRigs([]);
+        setSpotBaits([]);
       }
 
       const { data: rankData } = await supabase.from("catch_logs")
@@ -105,13 +106,14 @@ export default function AnalysisPage() {
 
   useEffect(() => {
     if (!selectedSpecies) return;
-    supabase.from("fish_rig_mapping").select("rigs(name)").eq("fish_species_id", selectedSpecies.id).then(({ data }) => {
-      const rm: Record<string, number> = {};
+    // 💡 已修正：改為依魚種查詢 fish_bait_mapping
+    supabase.from("fish_bait_mapping").select("baits(name)").eq("fish_species_id", selectedSpecies.id).then(({ data }) => {
+      const bm: Record<string, number> = {};
       (data ?? []).forEach((r: any) => {
-        const name = r.rigs?.name ?? "未知";
-        rm[name] = (rm[name] ?? 0) + 1;
+        const name = r.baits?.name ?? "未知";
+        bm[name] = (bm[name] ?? 0) + 1;
       });
-      setFishRigs(Object.entries(rm).map(([name, count]) => ({ name, count })));
+      setFishBaits(Object.entries(bm).map(([name, count]) => ({ name, count })));
     });
 
     supabase.from("catch_logs")
@@ -131,7 +133,7 @@ export default function AnalysisPage() {
       });
   }, [selectedSpecies]);
 
-  const rigData = selectedSpecies ? fishRigs : spotRigs;
+  const baitData = selectedSpecies ? fishBaits : spotBaits;
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -144,7 +146,7 @@ export default function AnalysisPage() {
             <Link href="/leaderboard" className="rounded-full border border-border px-3 py-1.5 text-sm hover:bg-muted transition-colors">
               排行榜
             </Link>
-            <h1 className="text-xl font-bold">📊 數據 analysis</h1>
+            <h1 className="text-xl font-bold">📊 數據分析</h1>
           </div>
           <ThemeToggle />
         </div>
@@ -228,23 +230,22 @@ export default function AnalysisPage() {
                     )}
                   </div>
 
-                  {/* 💡 已修正：釣組分布（無下方方框，移上去直接顯示釣組名稱與文字） */}
+                  {/* 💡 已修正：改為「餌料分布」圓餅圖，滑鼠移上去同樣會顯示名稱與筆數 */}
                   <div className="rounded-2xl border border-border bg-card/60 p-6">
-                    <h3 className="mb-1 font-semibold">釣組分布</h3>
+                    <h3 className="mb-1 font-semibold">餌料分布</h3>
                     <p className="mb-4 text-xs text-muted-foreground">
-                      {selectedSpecies ? `顯示魚種：${selectedSpecies.name} 的釣組` : `顯示釣點：${selectedSpot.name} 的釣組`}
+                      {selectedSpecies ? `顯示魚種：${selectedSpecies.name} 的推薦餌料` : `顯示釣點：${selectedSpot.name} 的推薦餌料`}
                     </p>
-                    {rigData.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">尚無釣組資料。</p>
+                    {baitData.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">尚無餌料資料。</p>
                     ) : (
                       <ResponsiveContainer width="100%" height={260}>
                         <PieChart>
-                          <Pie data={rigData} dataKey="count" nameKey="name" cx="50%" cy="50%" outerRadius={100} labelLine={false} label={renderCustomLabel}>
-                            {rigData.map((_, i) => (
+                          <Pie data={baitData} dataKey="count" nameKey="name" cx="50%" cy="50%" outerRadius={100} labelLine={false} label={renderCustomLabel}>
+                            {baitData.map((_, i) => (
                               <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                            ))}
+                                ))}
                           </Pie>
-                          {/* ✨ 這裡綁定了 name 參數，滑鼠移上去會完美呈現： [釣組名稱]: X 筆紀錄 */}
                           <Tooltip formatter={(v: any, name: any) => [`${v} 筆紀錄`, name]} />
                         </PieChart>
                       </ResponsiveContainer>
