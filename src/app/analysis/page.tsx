@@ -227,25 +227,43 @@ export default function AnalysisPage() {
                     )}
                   </div>
 
-                  <div className="rounded-2xl border border-border bg-card/60 p-6">
-                    <h3 className="mb-1 font-semibold">釣組分布</h3>
-                    <p className="mb-4 text-xs text-muted-foreground">
-                      {selectedSpecies ? `顯示魚種：${selectedSpecies.name} 的釣組` : `顯示釣點：${selectedSpot.name} 的釣組`}
-                    </p>
-                    {rigData.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">尚無釣組資料。</p>
-                    ) : (
-                      <ResponsiveContainer width="100%" height={260}>
-                        <PieChart>
-                          <Pie data={rigData} dataKey="count" nameKey="name" cx="50%" cy="50%" outerRadius={100} labelLine={false} label={renderCustomLabel}>
-                            {rigData.map((_, i) => (
-                              <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                  {/* 💡 已修正：釣組分布區塊（補上下方的文字標籤對照表） */}
+                  <div className="rounded-2xl border border-border bg-card/60 p-6 flex flex-col justify-between">
+                    <div>
+                      <h3 className="mb-1 font-semibold">釣組分布</h3>
+                      <p className="mb-4 text-xs text-muted-foreground">
+                        {selectedSpecies ? `顯示魚種：${selectedSpecies.name} 的釣組` : `顯示釣點：${selectedSpot.name} 的釣組`}
+                      </p>
+                      {rigData.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">尚無釣組資料。</p>
+                      ) : (
+                        <>
+                          <ResponsiveContainer width="100%" height={240}>
+                            <PieChart>
+                              <Pie data={rigData} dataKey="count" nameKey="name" cx="50%" cy="50%" outerRadius={90} labelLine={false} label={renderCustomLabel}>
+                                {rigData.map((_, i) => (
+                                  <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                                ))}
+                              </Pie>
+                              <Tooltip formatter={(v: any) => [`${v} 筆紀錄`, ""]} />
+                            </PieChart>
+                          </ResponsiveContainer>
+
+                          {/* ✨ 新增：圖表下方的釣組文字標籤對照清單 */}
+                          <div className="mt-4 grid grid-cols-2 gap-2">
+                            {rigData.map((rig, i) => (
+                              <div key={rig.name} className="flex items-center gap-2 rounded-xl border border-border bg-background/40 p-2 text-left">
+                                <div className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: COLORS[i % COLORS.length] }} />
+                                <div className="min-w-0">
+                                  <p className="font-semibold text-xs truncate text-foreground">{rig.name}</p>
+                                  <p className="text-[10px] text-muted-foreground">{rig.count} 筆紀錄</p>
+                                </div>
+                              </div>
                             ))}
-                          </Pie>
-                          <Tooltip formatter={(v: any) => [`${v} 筆紀錄`, ""]} />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    )}
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
 
